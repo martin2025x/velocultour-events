@@ -48,9 +48,11 @@ class VC_Events_Admin {
 			.vc-evt-grid input[type=text],
 			.vc-evt-grid input[type=date],
 			.vc-evt-grid select,
-			.vc-evt-grid textarea{width:100%;padding:8px 10px;border:1px solid #c3c4c7;border-radius:4px;font-size:14px}
+			.vc-evt-grid textarea:not(.wp-editor-area){width:100%;padding:8px 10px;border:1px solid #c3c4c7;border-radius:4px;font-size:14px}
 			.vc-evt-grid .hint{font-size:12px;color:#666;margin-top:4px}
-			.vc-evt-grid textarea{font-family:inherit;line-height:1.45}
+			.vc-evt-grid textarea:not(.wp-editor-area){font-family:inherit;line-height:1.45}
+			.vc-evt-grid .vc-evt-editor .wp-editor-container{border:1px solid #c3c4c7;border-radius:4px;overflow:hidden}
+			.vc-evt-grid label[for=vceventdesc]{align-self:start;padding-top:8px}
 			.vc-evt-preview{margin-top:18px;padding:14px;background:#fafaf7;border-left:3px solid #E77C05;font-size:13px;line-height:1.5}
 		</style>
 		<div class="vc-evt-grid">
@@ -81,10 +83,30 @@ class VC_Events_Admin {
 				<input type="text" name="vc_event_ort" id="vc_evt_ort" value="<?php echo esc_attr( $ort ); ?>" placeholder="z. B. Showroom Neuhof, Trailpark Vogelsberg">
 			</div>
 
-			<label for="vc_evt_desc">Kurzbeschreibung</label>
-			<div>
-				<textarea name="vc_event_desc" id="vc_evt_desc" rows="3" placeholder="2–3 Sätze, was Teilnehmer erwartet."><?php echo esc_textarea( $desc ); ?></textarea>
-				<div class="hint">Optimal 150–200 Zeichen. Wird unter der Uhrzeit angezeigt.</div>
+			<label for="vceventdesc">Infotext</label>
+			<div class="vc-evt-editor">
+				<?php
+				wp_editor(
+					$desc,
+					'vceventdesc',
+					array(
+						'textarea_name' => 'vc_event_desc',
+						'textarea_rows' => 10,
+						'media_buttons' => false,
+						'teeny'         => true,   // schlanke Leiste: Fett, Kursiv, Listen, Link
+						'quicktags'     => true,
+						'tinymce'       => array(
+							'toolbar1' => 'bold,italic,bullist,numlist,link,unlink,undo,redo',
+							'toolbar2' => '',
+						),
+					)
+				);
+				?>
+				<div class="hint">
+					Listen über die Aufzählungs-Buttons in der Leiste anlegen &mdash; nicht mit
+					&bdquo;-&ldquo; am Zeilenanfang. Kurz halten: Der Text steht auf der
+					Startseiten-Card unter der Uhrzeit, sehr lange Texte machen die Card hoch.
+				</div>
 			</div>
 
 			<label>Bild</label>
@@ -119,7 +141,8 @@ class VC_Events_Admin {
 
 		update_post_meta( $post_id, '_vc_event_uhrzeit', sanitize_text_field( $_POST['vc_event_uhrzeit'] ?? '' ) );
 		update_post_meta( $post_id, '_vc_event_ort',     sanitize_text_field( $_POST['vc_event_ort'] ?? '' ) );
-		update_post_meta( $post_id, '_vc_event_desc',    sanitize_textarea_field( $_POST['vc_event_desc'] ?? '' ) );
+		// Infotext darf Formatierung enthalten (Listen, fett, Links) -> wp_kses_post
+		update_post_meta( $post_id, '_vc_event_desc', wp_kses_post( wp_unslash( $_POST['vc_event_desc'] ?? '' ) ) );
 	}
 
 	// ============================================================

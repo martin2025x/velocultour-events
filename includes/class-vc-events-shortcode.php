@@ -77,7 +77,7 @@ class VC_Events_Shortcode {
 								<p class="event-card__meta"><?php echo esc_html( $meta ); ?></p>
 							<?php endif; ?>
 							<?php if ( $desc ) : ?>
-								<p class="event-card__desc"><?php echo esc_html( $desc ); ?></p>
+								<div class="event-card__desc"><?php echo wp_kses_post( wpautop( $desc ) ); ?></div>
 							<?php endif; ?>
 						</div>
 					</div>

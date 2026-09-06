@@ -41,6 +41,7 @@ class VC_Events_Shortcode {
 				$uhrzeit     = get_post_meta( $post->ID, '_vc_event_uhrzeit', true );
 				$ort         = get_post_meta( $post->ID, '_vc_event_ort', true );
 				$desc        = get_post_meta( $post->ID, '_vc_event_desc', true );
+				$anmeldung   = get_post_meta( $post->ID, '_vc_event_anmeldung', true );
 				$thumb_id    = get_post_thumbnail_id( $post->ID );
 				$image_url   = $thumb_id ? wp_get_attachment_image_url( $thumb_id, 'large' ) : '';
 				$alt         = $thumb_id ? get_post_meta( $thumb_id, '_wp_attachment_image_alt', true ) : '';
@@ -78,6 +79,12 @@ class VC_Events_Shortcode {
 							<?php endif; ?>
 							<?php if ( $desc ) : ?>
 								<div class="event-card__desc"><?php echo wp_kses_post( wpautop( $desc ) ); ?></div>
+							<?php endif; ?>
+							<?php if ( $anmeldung ) : ?>
+								<a class="event-card__anmeldung" href="<?php echo esc_url( $anmeldung ); ?>"
+								   target="_blank" rel="noopener" data-hover>
+									Zur Anmeldung <span aria-hidden="true">&rarr;</span>
+								</a>
 							<?php endif; ?>
 						</div>
 					</div>

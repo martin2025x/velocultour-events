@@ -40,6 +40,7 @@ class VC_Events_Admin {
 		$uhrzeit = get_post_meta( $post->ID, '_vc_event_uhrzeit', true );
 		$ort     = get_post_meta( $post->ID, '_vc_event_ort', true );
 		$desc    = get_post_meta( $post->ID, '_vc_event_desc', true );
+		$anmeldung = get_post_meta( $post->ID, '_vc_event_anmeldung', true );
 		$rubriken = vc_events_rubriken();
 		?>
 		<style>
@@ -81,6 +82,19 @@ class VC_Events_Admin {
 			<label for="vc_evt_ort">Ort</label>
 			<div>
 				<input type="text" name="vc_event_ort" id="vc_evt_ort" value="<?php echo esc_attr( $ort ); ?>" placeholder="z. B. Showroom Neuhof, Trailpark Vogelsberg">
+			</div>
+
+			<label for="vc_evt_anmeldung">Anmeldung (URL)</label>
+			<div>
+				<input type="url" name="vc_event_anmeldung" id="vc_evt_anmeldung" value="<?php echo esc_attr( $anmeldung ); ?>" placeholder="https://www.reisewelt-neuhof.de/…">
+				<div class="hint">
+					Ist das Feld gefüllt, erscheint auf der Card ein Button „Zur Anmeldung“.
+					Leer lassen bei Veranstaltungen ohne Anmeldung.<br>
+					Die Anmeldeformulare liegen bei reisewelt; hier gehört die Adresse der
+					jeweiligen Veranstaltungsseite hin. Tipp: Hängt man die ID des Formulars an
+					(z. B. <code>…/fahrsicherheitstraining-rhoen/#vfbp-form-58</code>), landen
+					Besucher direkt beim Formular statt oben auf der Seite.
+				</div>
 			</div>
 
 			<label for="vceventdesc">Infotext</label>
@@ -143,6 +157,11 @@ class VC_Events_Admin {
 		update_post_meta( $post_id, '_vc_event_ort',     sanitize_text_field( $_POST['vc_event_ort'] ?? '' ) );
 		// Infotext darf Formatierung enthalten (Listen, fett, Links) -> wp_kses_post
 		update_post_meta( $post_id, '_vc_event_desc', wp_kses_post( wp_unslash( $_POST['vc_event_desc'] ?? '' ) ) );
+
+		// Anmelde-Link. esc_url_raw laesst nur http/https durch, damit hier kein
+		// javascript: o. ae. landen kann.
+		$anmeldung = esc_url_raw( trim( (string) wp_unslash( $_POST['vc_event_anmeldung'] ?? '' ) ) );
+		update_post_meta( $post_id, '_vc_event_anmeldung', $anmeldung );
 	}
 
 	// ============================================================

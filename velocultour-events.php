@@ -5,7 +5,7 @@
  * GitHub Plugin URI: martin2025x/velocultour-events
  * Primary Branch: main
  * Description: Save-the-Date-Block auf der Startseite. CPT vc_event mit Rubriken (Radreisen-Nachtreffen, Fahrtechniktraining, Infovortrag, eigene). Pflege im WP-Admin: Datum, Uhrzeit, Ort, Beschreibung, Bild.
- * Version:     1.3.0
+ * Version:     1.3.1
  * Author:      velocultour Webteam
  * Requires PHP: 7.4
  * Requires at least: 6.0
@@ -15,7 +15,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'VC_EVT_VERSION', '1.3.0' );
+define( 'VC_EVT_VERSION', '1.3.1' );
 define( 'VC_EVT_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once VC_EVT_DIR . 'includes/class-vc-events-cpt.php';

@@ -130,4 +130,39 @@ class VC_Events_CPT {
 		}
 		return end( $termine );
 	}
+
+	/**
+	 * Monatsname, nach deutscher Rechtschreibung abgekuerzt.
+	 *
+	 * Nach Duden werden nur die langen Monatsnamen abgekuerzt; Maerz, Mai,
+	 * Juni und Juli haben keine gebraeuchliche Kurzform — sie sind mit vier
+	 * Zeichen aber ohnehin kurz genug fuer die schmale Datumsspalte.
+	 *
+	 * Bewusst eine eigene Tabelle statt wp_date( 'M' ): Die Kurzformen der
+	 * WordPress-Lokalisierung sind nicht die des Dudens, und je nach
+	 * Sprachpaket kommt dort sogar der volle Name zurueck — genau daher kam
+	 * das abgeschnittene "September".
+	 *
+	 * @param int $timestamp
+	 * @return string
+	 */
+	public static function monat_kurz( $timestamp ) {
+		$kurz = array(
+			1  => 'Jan.',
+			2  => 'Febr.',
+			3  => 'März',
+			4  => 'Apr.',
+			5  => 'Mai',
+			6  => 'Juni',
+			7  => 'Juli',
+			8  => 'Aug.',
+			9  => 'Sept.',
+			10 => 'Okt.',
+			11 => 'Nov.',
+			12 => 'Dez.',
+		);
+
+		$nr = (int) wp_date( 'n', $timestamp );
+		return isset( $kurz[ $nr ] ) ? $kurz[ $nr ] : wp_date( 'M', $timestamp );
+	}
 }

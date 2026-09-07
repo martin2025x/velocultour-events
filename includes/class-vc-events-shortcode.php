@@ -57,9 +57,9 @@ class VC_Events_Shortcode {
 
 				$ts  = $naechster ? strtotime( $naechster ) : 0;
 				$day = $ts ? wp_date( 'd', $ts ) : '—';
-				// Monat abgekuerzt und Jahr getrennt: "SEPTEMBER 26" sprengte die
-				// schmale Datumsspalte, "SEP" plus "2026" passt immer.
-				$month = $ts ? wp_date( 'M', $ts ) : '';
+				// Monat nach deutscher Rechtschreibung abgekuerzt und Jahr getrennt:
+				// "SEPTEMBER 26" sprengte die schmale Datumsspalte.
+				$month = $ts ? VC_Events_CPT::monat_kurz( $ts ) : '';
 				$year  = $ts ? wp_date( 'Y', $ts ) : '';
 
 				// Weitere Termine (ohne den bereits gross angezeigten)

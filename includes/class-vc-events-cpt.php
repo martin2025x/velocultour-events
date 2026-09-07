@@ -61,16 +61,73 @@ class VC_Events_CPT {
 			'meta_key'       => '_vc_event_datum',
 			'orderby'        => 'meta_value',
 			'order'          => 'ASC',
+			// Sichtbar bleiben, solange IRGENDEIN Termin noch bevorsteht. Massgeblich
+			// ist daher _vc_event_datum_ende (spaetester Termin), nicht der erste.
+			// Der zweite Zweig faengt Veranstaltungen ab, die vor der Umstellung auf
+			// mehrere Termine gespeichert wurden und das Feld noch nicht haben.
 			'meta_query'     => array(
+				'relation' => 'OR',
 				array(
-					'key'     => '_vc_event_datum',
+					'key'     => '_vc_event_datum_ende',
 					'value'   => $today,
 					'compare' => '>=',
 					'type'    => 'DATE',
+				),
+				array(
+					'relation' => 'AND',
+					array(
+						'key'     => '_vc_event_datum_ende',
+						'compare' => 'NOT EXISTS',
+					),
+					array(
+						'key'     => '_vc_event_datum',
+						'value'   => $today,
+						'compare' => '>=',
+						'type'    => 'DATE',
+					),
 				),
 			),
 			'no_found_rows'  => true,
 		) );
 		return $q->posts;
+	}
+
+	/**
+	 * Alle gepflegten Termine einer Veranstaltung, aufsteigend sortiert.
+	 *
+	 * @param int $post_id
+	 * @return string[] Liste von Datumsangaben im Format YYYY-MM-DD
+	 */
+	public static function get_termine( $post_id ) {
+		$termine = array();
+		foreach ( array( '_vc_event_datum', '_vc_event_datum_2', '_vc_event_datum_3', '_vc_event_datum_4' ) as $key ) {
+			$d = get_post_meta( $post_id, $key, true );
+			if ( $d ) {
+				$termine[] = $d;
+			}
+		}
+		$termine = array_values( array_unique( $termine ) );
+		sort( $termine );
+		return $termine;
+	}
+
+	/**
+	 * Der naechste noch bevorstehende Termin — oder der letzte, wenn alle vorbei sind.
+	 *
+	 * @param int $post_id
+	 * @return string
+	 */
+	public static function get_naechster_termin( $post_id ) {
+		$termine = self::get_termine( $post_id );
+		if ( ! $termine ) {
+			return '';
+		}
+		$heute = current_time( 'Y-m-d' );
+		foreach ( $termine as $t ) {
+			if ( $t >= $heute ) {
+				return $t;
+			}
+		}
+		return end( $termine );
 	}
 }

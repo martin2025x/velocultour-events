@@ -47,10 +47,39 @@ class VC_Events_Shortcode {
 				$alt         = $thumb_id ? get_post_meta( $thumb_id, '_wp_attachment_image_alt', true ) : '';
 				if ( ! $alt ) $alt = $post->post_title;
 
-				$ts = $datum ? strtotime( $datum ) : 0;
+				// v1.3.0: bis zu vier Termine. Gross steht der naechste bevorstehende,
+				// die uebrigen kommen als Zeile darunter.
+				$termine   = VC_Events_CPT::get_termine( $post->ID );
+				$naechster = VC_Events_CPT::get_naechster_termin( $post->ID );
+				if ( ! $naechster && $datum ) {
+					$naechster = $datum;   // Altbestand ohne Mehrfachtermine
+				}
+
+				$ts  = $naechster ? strtotime( $naechster ) : 0;
 				$day = $ts ? wp_date( 'd', $ts ) : '—';
-				// Monat + 2-stellige Jahreszahl, z.B. "Juni 26"
-				$month_year = $ts ? wp_date( 'F y', $ts ) : '';
+				// Monat abgekuerzt und Jahr getrennt: "SEPTEMBER 26" sprengte die
+				// schmale Datumsspalte, "SEP" plus "2026" passt immer.
+				$month = $ts ? wp_date( 'M', $ts ) : '';
+				$year  = $ts ? wp_date( 'Y', $ts ) : '';
+
+				// Weitere Termine (ohne den bereits gross angezeigten)
+				$weitere = array();
+				foreach ( $termine as $t ) {
+					if ( $t !== $naechster ) {
+						$weitere[] = wp_date( 'd.m.', strtotime( $t ) );
+					}
+				}
+
+				// Beschriftung des Buttons nach Art des Ziels
+				$anmeldung_text = 'Zur Anmeldung';
+				if ( $anmeldung ) {
+					$schema = strtolower( (string) wp_parse_url( $anmeldung, PHP_URL_SCHEME ) );
+					if ( 'mailto' === $schema ) {
+						$anmeldung_text = 'Per E-Mail anmelden';
+					} elseif ( 'tel' === $schema ) {
+						$anmeldung_text = 'Telefonisch anmelden';
+					}
+				}
 
 				$meta_parts = array();
 				if ( $uhrzeit ) $meta_parts[] = $uhrzeit;
@@ -70,7 +99,8 @@ class VC_Events_Shortcode {
 					<div class="event-card__body">
 						<div class="event-card__date">
 							<span class="event-card__day"><?php echo esc_html( $day ); ?></span>
-							<span class="event-card__month"><?php echo esc_html( $month_year ); ?></span>
+							<span class="event-card__month"><?php echo esc_html( $month ); ?></span>
+							<span class="event-card__year"><?php echo esc_html( $year ); ?></span>
 						</div>
 						<div class="event-card__main">
 							<h3 class="event-card__title"><?php echo esc_html( $post->post_title ); ?></h3>
@@ -80,10 +110,20 @@ class VC_Events_Shortcode {
 							<?php if ( $desc ) : ?>
 								<div class="event-card__desc"><?php echo wp_kses_post( wpautop( $desc ) ); ?></div>
 							<?php endif; ?>
+							<?php if ( $weitere ) : ?>
+								<p class="event-card__weitere">
+									<span>Weitere Termine</span>
+									<?php echo esc_html( implode( ' · ', $weitere ) ); ?>
+								</p>
+							<?php endif; ?>
 							<?php if ( $anmeldung ) : ?>
 								<a class="event-card__anmeldung" href="<?php echo esc_url( $anmeldung ); ?>"
-								   target="_blank" rel="noopener" data-hover>
-									Zur Anmeldung <span aria-hidden="true">&rarr;</span>
+									<?php // mailto und tel nicht in einem neuen Tab oeffnen — das laesst
+									// sonst eine leere Seite zurueck.
+									$extern = 0 === strpos( $anmeldung, 'http' );
+									echo $extern ? ' target="_blank" rel="noopener"' : ''; ?>
+								   data-hover>
+									<?php echo esc_html( $anmeldung_text ); ?> <span aria-hidden="true">&rarr;</span>
 								</a>
 							<?php endif; ?>
 						</div>

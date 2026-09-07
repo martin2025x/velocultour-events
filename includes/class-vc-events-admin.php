@@ -37,6 +37,9 @@ class VC_Events_Admin {
 		wp_nonce_field( 'vc_event_meta', 'vc_event_meta_nonce' );
 		$rubrik  = get_post_meta( $post->ID, '_vc_event_rubrik', true );
 		$datum   = get_post_meta( $post->ID, '_vc_event_datum', true );
+		$datum2  = get_post_meta( $post->ID, '_vc_event_datum_2', true );
+		$datum3  = get_post_meta( $post->ID, '_vc_event_datum_3', true );
+		$datum4  = get_post_meta( $post->ID, '_vc_event_datum_4', true );
 		$uhrzeit = get_post_meta( $post->ID, '_vc_event_uhrzeit', true );
 		$ort     = get_post_meta( $post->ID, '_vc_event_ort', true );
 		$desc    = get_post_meta( $post->ID, '_vc_event_desc', true );
@@ -55,6 +58,10 @@ class VC_Events_Admin {
 			.vc-evt-grid .vc-evt-editor .wp-editor-container{border:1px solid #c3c4c7;border-radius:4px;overflow:hidden}
 			.vc-evt-grid label[for=vceventdesc]{align-self:start;padding-top:8px}
 			.vc-evt-preview{margin-top:18px;padding:14px;background:#fafaf7;border-left:3px solid #E77C05;font-size:13px;line-height:1.5}
+			.vc-evt-termine{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px}
+			.vc-evt-termin{display:flex;flex-direction:column;gap:4px;font-weight:400}
+			.vc-evt-termin span{font-size:11px;color:#666;letter-spacing:.03em;text-transform:uppercase}
+			.vc-evt-termin input{width:100%}
 		</style>
 		<div class="vc-evt-grid">
 			<label for="vc_evt_rubrik">Rubrik *</label>
@@ -67,10 +74,33 @@ class VC_Events_Admin {
 				<div class="hint">Bestimmt die Badge-Farbe oben links auf der Card.</div>
 			</div>
 
-			<label for="vc_evt_datum">Datum *</label>
+			<label for="vc_evt_datum">Termine *</label>
 			<div>
-				<input type="date" name="vc_event_datum" id="vc_evt_datum" value="<?php echo esc_attr( $datum ); ?>">
-				<div class="hint">Vergangene Termine erscheinen nicht mehr auf der Startseite.</div>
+				<div class="vc-evt-termine">
+					<label class="vc-evt-termin">
+						<span>1. Termin</span>
+						<input type="date" name="vc_event_datum" id="vc_evt_datum" value="<?php echo esc_attr( $datum ); ?>">
+					</label>
+					<label class="vc-evt-termin">
+						<span>2. Termin</span>
+						<input type="date" name="vc_event_datum_2" value="<?php echo esc_attr( $datum2 ); ?>">
+					</label>
+					<label class="vc-evt-termin">
+						<span>3. Termin</span>
+						<input type="date" name="vc_event_datum_3" value="<?php echo esc_attr( $datum3 ); ?>">
+					</label>
+					<label class="vc-evt-termin">
+						<span>4. Termin</span>
+						<input type="date" name="vc_event_datum_4" value="<?php echo esc_attr( $datum4 ); ?>">
+					</label>
+				</div>
+				<div class="hint">
+					Der erste Termin ist Pflicht, die übrigen optional — für Veranstaltungen,
+					die mehrfach stattfinden. Auf der Card erscheint groß der <strong>nächste
+					noch bevorstehende</strong> Termin, die weiteren darunter.<br>
+					Die Veranstaltung verschwindet erst von der Startseite, wenn <em>alle</em>
+					Termine vorbei sind.
+				</div>
 			</div>
 
 			<label for="vc_evt_uhrzeit">Uhrzeit</label>
@@ -88,12 +118,18 @@ class VC_Events_Admin {
 			<div>
 				<input type="url" name="vc_event_anmeldung" id="vc_evt_anmeldung" value="<?php echo esc_attr( $anmeldung ); ?>" placeholder="https://www.reisewelt-neuhof.de/…">
 				<div class="hint">
-					Ist das Feld gefüllt, erscheint auf der Card ein Button „Zur Anmeldung“.
-					Leer lassen bei Veranstaltungen ohne Anmeldung.<br>
-					Die Anmeldeformulare liegen bei reisewelt; hier gehört die Adresse der
-					jeweiligen Veranstaltungsseite hin. Tipp: Hängt man die ID des Formulars an
-					(z. B. <code>…/fahrsicherheitstraining-rhoen/#vfbp-form-58</code>), landen
-					Besucher direkt beim Formular statt oben auf der Seite.
+					Ist das Feld gefüllt, erscheint auf der Card ein Button. Leer lassen bei
+					Veranstaltungen ohne Anmeldung.<br><br>
+					<strong>Drei Möglichkeiten:</strong><br>
+					1. <strong>Webadresse</strong> — z. B. die reisewelt-Veranstaltungsseite.
+					Hängt man die ID des Formulars an
+					(<code>…/fahrsicherheitstraining-rhoen/#vfbp-form-58</code>), landen Besucher
+					direkt beim Formular. Button heißt dann „Zur Anmeldung“.<br>
+					2. <strong>E-Mail</strong> — <code>mailto:info@velocultour.de</code>, gern mit
+					Betreff: <code>mailto:info@velocultour.de?subject=Anmeldung%20Fahrtechniktraining</code>.
+					Button heißt dann „Per E-Mail anmelden“.<br>
+					3. <strong>Telefon</strong> — <code>tel:+4966559999080</code>.
+					Button heißt dann „Telefonisch anmelden“.
 				</div>
 			</div>
 
@@ -148,20 +184,43 @@ class VC_Events_Admin {
 		if ( ! isset( $rubriken[ $rubrik ] ) ) $rubrik = 'event';
 		update_post_meta( $post_id, '_vc_event_rubrik', $rubrik );
 
-		// Datum: YYYY-MM-DD
-		$datum = sanitize_text_field( $_POST['vc_event_datum'] ?? '' );
-		if ( $datum && ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $datum ) ) $datum = '';
-		update_post_meta( $post_id, '_vc_event_datum', $datum );
+		// Termine: bis zu vier, jeweils YYYY-MM-DD.
+		$termine = array();
+		foreach ( array( 'vc_event_datum', 'vc_event_datum_2', 'vc_event_datum_3', 'vc_event_datum_4' ) as $i => $feld ) {
+			$d = sanitize_text_field( wp_unslash( $_POST[ $feld ] ?? '' ) );
+			if ( $d && ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $d ) ) {
+				$d = '';
+			}
+			$schluessel = 0 === $i ? '_vc_event_datum' : '_vc_event_datum_' . ( $i + 1 );
+			update_post_meta( $post_id, $schluessel, $d );
+			if ( $d ) {
+				$termine[] = $d;
+			}
+		}
+
+		// Spaetester Termin. Danach richtet sich, wie lange die Veranstaltung
+		// auf der Startseite bleibt — sonst verschwaende sie schon nach dem
+		// ersten von vier Terminen.
+		update_post_meta( $post_id, '_vc_event_datum_ende', $termine ? max( $termine ) : '' );
 
 		update_post_meta( $post_id, '_vc_event_uhrzeit', sanitize_text_field( $_POST['vc_event_uhrzeit'] ?? '' ) );
 		update_post_meta( $post_id, '_vc_event_ort',     sanitize_text_field( $_POST['vc_event_ort'] ?? '' ) );
 		// Infotext darf Formatierung enthalten (Listen, fett, Links) -> wp_kses_post
 		update_post_meta( $post_id, '_vc_event_desc', wp_kses_post( wp_unslash( $_POST['vc_event_desc'] ?? '' ) ) );
 
-		// Anmelde-Link. esc_url_raw laesst nur http/https durch, damit hier kein
-		// javascript: o. ae. landen kann.
-		$anmeldung = esc_url_raw( trim( (string) wp_unslash( $_POST['vc_event_anmeldung'] ?? '' ) ) );
-		update_post_meta( $post_id, '_vc_event_anmeldung', $anmeldung );
+		// Anmelde-Ziel. Erlaubt sind Webadressen, mailto: und tel: — esc_url_raw
+		// laesst nur die von WordPress freigegebenen Protokolle durch, javascript:
+		// faellt also raus.
+		$anmeldung = trim( (string) wp_unslash( $_POST['vc_event_anmeldung'] ?? '' ) );
+
+		// Wer nur "info@velocultour.de" eintraegt, meint eine Mailadresse. Das
+		// Browserfeld lehnt das zwar ab, aber falls es doch durchkommt (Autofill,
+		// Kopieren), ergaenzen wir das Schema still.
+		if ( $anmeldung && false === strpos( $anmeldung, ':' ) && is_email( $anmeldung ) ) {
+			$anmeldung = 'mailto:' . $anmeldung;
+		}
+
+		update_post_meta( $post_id, '_vc_event_anmeldung', esc_url_raw( $anmeldung ) );
 	}
 
 	// ============================================================
@@ -210,17 +269,40 @@ class VC_Events_Admin {
 			}
 		}
 		if ( 'vc_evt_datum' === $col ) {
-			$d = get_post_meta( $post_id, '_vc_event_datum', true );
-			$u = get_post_meta( $post_id, '_vc_event_uhrzeit', true );
-			if ( $d ) {
-				$ts = strtotime( $d );
-				$today = strtotime( current_time( 'Y-m-d' ) );
-				$past = $ts < $today;
-				echo '<strong' . ( $past ? ' style="color:#999;text-decoration:line-through;"' : '' ) . '>' . esc_html( wp_date( 'D, d.m.Y', $ts ) ) . '</strong>';
-				if ( $u ) echo '<br><small>' . esc_html( $u ) . '</small>';
-				if ( $past ) echo '<br><small style="color:#B91C1C;">vergangen</small>';
-			} else {
+			$termine = VC_Events_CPT::get_termine( $post_id );
+			$u       = get_post_meta( $post_id, '_vc_event_uhrzeit', true );
+
+			if ( ! $termine ) {
 				echo '<em style="color:#B91C1C;">kein Datum</em>';
+				return;
+			}
+
+			$heute    = strtotime( current_time( 'Y-m-d' ) );
+			$offen    = 0;
+			$ausgaben = array();
+
+			foreach ( $termine as $t ) {
+				$ts       = strtotime( $t );
+				$vergangen = $ts < $heute;
+				if ( ! $vergangen ) {
+					$offen++;
+				}
+				$ausgaben[] = sprintf(
+					'<span style="%s">%s</span>',
+					$vergangen ? 'color:#999;text-decoration:line-through;' : 'font-weight:600;',
+					esc_html( wp_date( 'D, d.m.Y', $ts ) )
+				);
+			}
+
+			echo implode( '<br>', $ausgaben ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+			if ( $u ) {
+				echo '<br><small>' . esc_html( $u ) . '</small>';
+			}
+			if ( 0 === $offen ) {
+				echo '<br><small style="color:#B91C1C;">alle Termine vergangen</small>';
+			} elseif ( count( $termine ) > 1 ) {
+				echo '<br><small style="color:#666;">' . (int) $offen . ' von ' . count( $termine ) . ' noch offen</small>';
 			}
 		}
 		if ( 'vc_evt_ort' === $col ) {

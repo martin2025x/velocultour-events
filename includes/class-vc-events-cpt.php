@@ -52,7 +52,7 @@ class VC_Events_CPT {
 	 * @param int $limit
 	 * @return WP_Post[]
 	 */
-	public static function get_upcoming( $limit = 3 ) {
+	public static function get_upcoming( $limit = 4 ) {
 		$today = current_time( 'Y-m-d' );
 		$q = new WP_Query( array(
 			'post_type'      => self::POST_TYPE,

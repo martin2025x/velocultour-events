@@ -23,7 +23,8 @@ class VC_Events_Shortcode {
 
 	public static function render( $atts ) {
 		$atts = shortcode_atts( array(
-			'limit' => 3,
+			// v1.4.1: vier, passend zum vierspaltigen Raster seit Theme 1.9.9.
+			'limit' => 4,
 		), $atts, 'vc_events' );
 
 		$events = VC_Events_CPT::get_upcoming( (int) $atts['limit'] );

@@ -42,6 +42,7 @@ class VC_Events_Shortcode {
 				$ort         = get_post_meta( $post->ID, '_vc_event_ort', true );
 				$desc        = get_post_meta( $post->ID, '_vc_event_desc', true );
 				$anmeldung   = get_post_meta( $post->ID, '_vc_event_anmeldung', true );
+				$anmeldung_eigen = get_post_meta( $post->ID, '_vc_event_anmeldung_text', true );
 				$thumb_id    = get_post_thumbnail_id( $post->ID );
 				$image_url   = $thumb_id ? wp_get_attachment_image_url( $thumb_id, 'large' ) : '';
 				$alt         = $thumb_id ? get_post_meta( $thumb_id, '_wp_attachment_image_alt', true ) : '';
@@ -70,14 +71,19 @@ class VC_Events_Shortcode {
 					}
 				}
 
-				// Beschriftung des Buttons nach Art des Ziels
-				$anmeldung_text = 'Zur Anmeldung';
-				if ( $anmeldung ) {
+				// Beschriftung des Buttons: was im Backend steht, sonst ein Vorschlag
+				// nach Art des Ziels. Nicht jeder Link fuehrt zu einer Anmeldung —
+				// er kann auch nur auf eine Beschreibung zeigen.
+				$anmeldung_text = trim( (string) $anmeldung_eigen );
+
+				if ( '' === $anmeldung_text && $anmeldung ) {
 					$schema = strtolower( (string) wp_parse_url( $anmeldung, PHP_URL_SCHEME ) );
 					if ( 'mailto' === $schema ) {
 						$anmeldung_text = 'Per E-Mail anmelden';
 					} elseif ( 'tel' === $schema ) {
 						$anmeldung_text = 'Telefonisch anmelden';
+					} else {
+						$anmeldung_text = 'Zur Anmeldung';
 					}
 				}
 

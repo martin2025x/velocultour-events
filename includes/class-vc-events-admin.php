@@ -44,6 +44,7 @@ class VC_Events_Admin {
 		$ort     = get_post_meta( $post->ID, '_vc_event_ort', true );
 		$desc    = get_post_meta( $post->ID, '_vc_event_desc', true );
 		$anmeldung = get_post_meta( $post->ID, '_vc_event_anmeldung', true );
+		$anmeldung_text = get_post_meta( $post->ID, '_vc_event_anmeldung_text', true );
 		$rubriken = vc_events_rubriken();
 		?>
 		<style>
@@ -129,7 +130,19 @@ class VC_Events_Admin {
 					Betreff: <code>mailto:info@velocultour.de?subject=Anmeldung%20Fahrtechniktraining</code>.
 					Button heißt dann „Per E-Mail anmelden“.<br>
 					3. <strong>Telefon</strong> — <code>tel:+4966559999080</code>.
-					Button heißt dann „Telefonisch anmelden“.
+				</div>
+			</div>
+
+			<label for="vc_evt_anmeldung_text">Button-Text</label>
+			<div>
+				<input type="text" name="vc_event_anmeldung_text" id="vc_evt_anmeldung_text"
+				       value="<?php echo esc_attr( $anmeldung_text ); ?>"
+				       placeholder="z. B. Weitere Informationen">
+				<div class="hint">
+					Die Beschriftung des Buttons. Leer lassen setzt je nach Ziel automatisch
+					„Zur Anmeldung“, „Per E-Mail anmelden“ oder „Telefonisch anmelden“ ein.<br>
+					Sinnvoll zu ändern, wenn der Link nicht zu einer Anmeldung führt, sondern
+					etwa zu einer Beschreibung — dann passt „Weitere Informationen“ besser.
 				</div>
 			</div>
 
@@ -221,6 +234,12 @@ class VC_Events_Admin {
 		}
 
 		update_post_meta( $post_id, '_vc_event_anmeldung', esc_url_raw( $anmeldung ) );
+
+		update_post_meta(
+			$post_id,
+			'_vc_event_anmeldung_text',
+			sanitize_text_field( wp_unslash( $_POST['vc_event_anmeldung_text'] ?? '' ) )
+		);
 	}
 
 	// ============================================================

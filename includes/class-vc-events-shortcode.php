@@ -99,7 +99,7 @@ class VC_Events_Shortcode {
 				<article class="event-card reveal<?php echo esc_attr( $delay_class ); ?>" data-hover>
 					<div class="event-card__media">
 						<?php if ( $image_url ) : ?>
-							<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $alt ); ?>" loading="lazy" />
+							<img decoding="async" src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $alt ); ?>" loading="lazy" />
 						<?php endif; ?>
 						<span class="event-card__badge event-card__badge--<?php echo esc_attr( $rubrik['mod'] ); ?>"><?php echo esc_html( $rubrik['label'] ); ?></span>
 					</div>
